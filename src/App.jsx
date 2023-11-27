@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [trendingMovies, setTrendingMovies] = useState([]);
+
+  useEffect(() => {
+    getTrendingMovies();
+  }, []);
+
+  async function getTrendingMovies() {
+    try {
+      const apiKey = import.meta.env.VITE_API_KEY;
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        }
+      };
+
+      const response = await fetch('https://api.themoviedb.org/3/trending/movie/day?language=en-US', options);
+      const data = await response.json();
+
+      setTrendingMovies(data.results);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div>
+    {trendingMovies.map(movie => (
+      <div key={movie.id}>
+        <h2>{movie.title}</h2>
+        <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} title={movie.overview}/>
+        <p>Release Date: {movie.release_date}</p>
+        <p>Vote Average: {movie.vote_average}</p>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    ))}
+  </div>
+  );
 }
 
-export default App
+export default App;
